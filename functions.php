@@ -39,8 +39,8 @@ function fancy_replace_howdy($wp_admin_bar)
   }
   $my_account = $wp_admin_bar->get_node('my-account');
 
-  // Check if the node exists before trying to access its properties
-  if ($my_account) {
+  // Only proceed if the node exists and has a title property
+  if ($my_account && isset($my_account->title)) {
     $newtitle = str_replace('Howdy,', $msg, $my_account->title);
     $wp_admin_bar->add_node([
       'id' => 'my-account',
