@@ -28,28 +28,28 @@ add_action('wp_enqueue_scripts', 'divichild_enqueue_scripts');
  */
 function fancy_replace_howdy($wp_admin_bar)
 {
-  $Hour = date('G');
-  $msg = '';
-  if ($Hour >= 5 && $Hour <= 11) {
-    $msg = 'Good morning,';
-  } elseif ($Hour >= 12 && $Hour <= 18) {
-    $msg = 'Good afternoon,';
-  } elseif ($Hour >= 19 || $Hour <= 4) {
-    $msg = 'Good evening,';
-  }
-  $my_account = $wp_admin_bar->get_node('my-account');
+    $Hour = date('G');
+    $msg  = '';
+    if ($Hour >= 5 && $Hour <= 11) {
+        $msg = 'Good morning,';
+    } elseif ($Hour >= 12 && $Hour <= 18) {
+        $msg = 'Good afternoon,';
+    } elseif ($Hour >= 19 || $Hour <= 4) {
+        $msg = 'Good evening,';
+    }
+    $my_account = $wp_admin_bar->get_node('my-account');
 
-  // Only proceed if the node exists and has a title property
-  if ($my_account && isset($my_account->title)) {
-    $newtitle = str_replace('Howdy,', $msg, $my_account->title);
-    $wp_admin_bar->add_node([
-      'id' => 'my-account',
-      'title' => $newtitle,
-    ]);
-  }
+    // Only proceed if the node exists and has a title property
+    if ($my_account && isset($my_account->title)) {
+        $newtitle = str_replace('Howdy,', $msg, $my_account->title);
+        $wp_admin_bar->add_node([
+            'id'    => 'my-account',
+            'title' => $newtitle,
+        ]);
+    }
 }
 
-add_filter('admin_bar_menu', 'fancy_replace_howdy', 20);
+add_filter('admin_bar_menu', 'fancy_replace_howdy', 9992);
 
 /**
  * Disable author from embeds response data.
