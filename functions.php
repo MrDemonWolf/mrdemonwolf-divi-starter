@@ -19,7 +19,7 @@
  */
 function divichild_enqueue_scripts()
 {
-  wp_enqueue_style('parent-style', get_template_directory_uri() . '/style.css');
+    wp_enqueue_style('parent-style', get_template_directory_uri() . '/style.css');
 }
 add_action('wp_enqueue_scripts', 'divichild_enqueue_scripts');
 
@@ -57,7 +57,7 @@ add_filter('admin_bar_menu', 'fancy_replace_howdy', 20);
 add_filter('oembed_response_data', 'disable_embeds_filter_oembed_response_data_');
 function disable_embeds_filter_oembed_response_data_($data, $url, $args)
 {
-  unset($data['author_url']);
-  unset($data['author_name']);
-  return $data;
+    unset($data['author_url']);
+    unset($data['author_name']);
+    return $data;
 }
