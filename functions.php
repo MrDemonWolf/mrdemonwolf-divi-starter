@@ -19,7 +19,23 @@
  */
 function divichild_enqueue_scripts()
 {
+    // Enqueue parent theme stylesheet
     wp_enqueue_style('parent-style', get_template_directory_uri() . '/style.css');
+
+    // Enqueue child theme stylesheet with cache-busting
+    wp_enqueue_style(
+        'child-style',
+        get_stylesheet_directory_uri() . '/style.css',
+        ['parent-style'],
+        filemtime(get_stylesheet_directory() . '/style.css')
+    );
+
+    // Enqueue child theme script (script.js)
+    $script_path = get_stylesheet_directory() . '/script.js';
+    $script_uri  = get_stylesheet_directory_uri() . '/script.js';
+    $version     = file_exists($script_path) ? filemtime($script_path) : false;
+
+    wp_enqueue_script('grittolead-script', $script_uri, [], $version, true);
 }
 add_action('wp_enqueue_scripts', 'divichild_enqueue_scripts');
 
