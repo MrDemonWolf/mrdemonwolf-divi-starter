@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "TAG=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "TAG=dev-pr${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build theme zip
+        run: |
+          mkdir mrdemonwolf-divi-starter
+          cp style.css functions.php script.js screenshot.jpg readme.txt mrdemonwolf-divi-starter/
+          zip -r "mrdemonwolf-divi-starter-${{ steps.version.outputs.TAG }}.zip" mrdemonwolf-divi-starter/
+
+      - name: Upload release asset
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: mrdemonwolf-divi-starter-${{ steps.version.outputs.TAG }}.zip
+
+      - name: Upload PR artifact
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mrdemonwolf-divi-starter-${{ steps.version.outputs.TAG }}
+          path: mrdemonwolf-divi-starter-${{ steps.version.outputs.TAG }}.zip
