@@ -14,10 +14,15 @@
  *
  * =============================================================================== */
 
+if ( ! defined( 'ABSPATH' ) )
+{
+    exit;
+}
+
 /**
  * Enqueue parent theme styles
  */
-function divichild_enqueue_scripts()
+function mrdemonwolf_enqueue_scripts()
 {
     // Enqueue parent theme stylesheet
     wp_enqueue_style('parent-style', get_template_directory_uri() . '/style.css');
@@ -35,22 +40,22 @@ function divichild_enqueue_scripts()
     $script_uri  = get_stylesheet_directory_uri() . '/script.js';
     $version     = file_exists($script_path) ? filemtime($script_path) : false;
 
-    wp_enqueue_script('grittolead-script', $script_uri, [], $version, true);
+    wp_enqueue_script('mrdemonwolf-script', $script_uri, [], $version, true);
 }
-add_action('wp_enqueue_scripts', 'divichild_enqueue_scripts');
+add_action('wp_enqueue_scripts', 'mrdemonwolf_enqueue_scripts');
 
 /**
  * Replace the howdy greeting with a custom greeting based on time of day
  */
-function fancy_replace_howdy($wp_admin_bar)
+function mrdemonwolf_replace_howdy($wp_admin_bar)
 {
-    $Hour = date('G');
+    $hour = wp_date('G');
     $msg  = '';
-    if ($Hour >= 5 && $Hour <= 11) {
+    if ($hour >= 5 && $hour <= 11) {
         $msg = 'Good morning,';
-    } elseif ($Hour >= 12 && $Hour <= 18) {
+    } elseif ($hour >= 12 && $hour <= 18) {
         $msg = 'Good afternoon,';
-    } elseif ($Hour >= 19 || $Hour <= 4) {
+    } elseif ($hour >= 19 || $hour <= 4) {
         $msg = 'Good evening,';
     }
     $my_account = $wp_admin_bar->get_node('my-account');
@@ -65,15 +70,15 @@ function fancy_replace_howdy($wp_admin_bar)
     }
 }
 
-add_filter('admin_bar_menu', 'fancy_replace_howdy', 9992);
+add_action('admin_bar_menu', 'mrdemonwolf_replace_howdy', 9992);
 
 /**
  * Disable author from embeds response data.
  */
-add_filter('oembed_response_data', 'disable_embeds_filter_oembed_response_data_');
-function disable_embeds_filter_oembed_response_data_($data, $url, $args)
+function mrdemonwolf_disable_embed_author($data)
 {
     unset($data['author_url']);
     unset($data['author_name']);
     return $data;
 }
+add_filter('oembed_response_data', 'mrdemonwolf_disable_embed_author');
