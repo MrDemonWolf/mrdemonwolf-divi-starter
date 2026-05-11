@@ -8,8 +8,9 @@ A clean foundation for building custom websites with the Divi theme.
 
 ## Prerequisites
 
-- WordPress
-- Divi Theme (Installed and Activated)
+- WordPress 5.0+
+- Divi Theme — Divi 4 or Divi 5 (installed and activated)
+- PHP 7.4+
 
 ## Get Divi
 
@@ -31,6 +32,10 @@ Customize the child theme to meet your needs.
 - `functions.php`: Custom PHP
 - Templates: Override Divi templates
 - Divi Builder: Use as normal
+
+### RankMath Integration
+
+If [Rank Math SEO](https://rankmath.com/) is active, the theme automatically registers a `rank_math/researcher/post_content` filter that pipes Divi 5 block content through `the_content` so RankMath's content analysis reports accurate word counts and keyword usage on Divi 5 posts. No configuration required — it only activates when RankMath is detected.
 
 ## Support
 
