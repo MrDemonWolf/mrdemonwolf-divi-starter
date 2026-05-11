@@ -41,6 +41,22 @@ If [Rank Math SEO](https://rankmath.com/) is active, the theme automatically reg
 
 See the Divi documentation or open an issue.
 
+## Development
+
+Dev dependencies (PHPCS+WPCS, PHPStan, PHPUnit, WP_Mock) are managed with Composer.
+
+```bash
+composer install
+composer lint       # php -l on all PHP files
+composer phpcs      # WordPress Coding Standards
+composer phpcbf     # Auto-fix what PHPCS can fix
+composer phpstan    # Static analysis (level 5, with WP stubs)
+composer test       # PHPUnit unit tests
+composer check      # Run everything
+```
+
+CI runs all four on every push/PR via [`.github/workflows/ci.yml`](.github/workflows/ci.yml) across PHP 7.4, 8.0, 8.1, 8.2, 8.3.
+
 ## Contributing
 
 Pull requests are welcome.

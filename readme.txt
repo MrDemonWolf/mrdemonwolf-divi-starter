@@ -20,7 +20,7 @@ MrDemonWolf Divi Starter is a lightweight child theme for the Divi theme by Eleg
 * Added support for Divi 5 (works on both Divi 4 and Divi 5)
 * Added RankMath content-analysis fix for Divi 5 block content (auto-enabled when RankMath is active)
 * Added parent theme version to enqueue for safer cache control
-* Cast hour to int in admin bar greeting and rewrote branches with match()
+* Cast hour to int in admin bar greeting and clarified branches
 * Lowered admin_bar_menu priority from 9992 to 100
 * Added Requires at least, Requires PHP, and Tested up to headers to style.css
 * Loaded child theme text domain on after_setup_theme for future translations

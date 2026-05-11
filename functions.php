@@ -66,11 +66,15 @@ add_action( 'wp_enqueue_scripts', 'mrdemonwolf_enqueue_scripts' );
 function mrdemonwolf_replace_howdy( $wp_admin_bar )
 {
     $hour = (int) wp_date( 'G' );
-    $msg  = match ( true ) {
-        $hour >= 5 && $hour <= 11  => 'Good morning,',
-        $hour >= 12 && $hour <= 18 => 'Good afternoon,',
-        default                    => 'Good evening,', // 19-23 and 0-4
-    };
+
+    if ( $hour >= 5 && $hour <= 11 ) {
+        $msg = 'Good morning,';
+    } elseif ( $hour >= 12 && $hour <= 18 ) {
+        $msg = 'Good afternoon,';
+    } else {
+        // 19-23 and 0-4
+        $msg = 'Good evening,';
+    }
 
     $my_account = $wp_admin_bar->get_node( 'my-account' );
 
@@ -103,22 +107,39 @@ add_filter( 'oembed_response_data', 'mrdemonwolf_disable_embed_author' );
  * and reports 0 words. Pipe content through `the_content` so blocks render
  * before RankMath analyzes. Only registered when RankMath is active.
  *
- * Harmless on Divi 4 (the_content is a no-op for Divi 4 shortcode-rendered
- * content in this context), so we register unconditionally when RankMath loads.
+ * Registered on `plugins_loaded` priority 20 so RankMath's constants are
+ * guaranteed defined. Includes a recursion guard in case any plugin re-enters
+ * this filter from inside `the_content`.
+ *
+ * Harmless on Divi 4 — `the_content` is a no-op for content not built with
+ * the Divi 5 block editor.
  */
+function mrdemonwolf_rank_math_divi5_content( $content, $post_id )
+{
+    static $running = false;
+
+    if ( $running ) {
+        return $content;
+    }
+
+    $post = get_post( $post_id );
+    if ( ! $post || empty( $post->post_content ) ) {
+        return $content;
+    }
+
+    $running  = true;
+    $rendered = apply_filters( 'the_content', $post->post_content );
+    $running  = false;
+
+    return $rendered !== '' ? $rendered : $content;
+}
+
 function mrdemonwolf_register_rank_math_divi5_fix()
 {
     if ( ! defined( 'RANK_MATH_VERSION' ) ) {
         return;
     }
 
-    add_filter( 'rank_math/researcher/post_content', function ( $content, $post_id ) {
-        $post = get_post( $post_id );
-        if ( ! $post ) {
-            return $content;
-        }
-        $rendered = apply_filters( 'the_content', $post->post_content );
-        return $rendered ? $rendered : $content;
-    }, 10, 2 );
+    add_filter( 'rank_math/researcher/post_content', 'mrdemonwolf_rank_math_divi5_content', 10, 2 );
 }
-add_action( 'init', 'mrdemonwolf_register_rank_math_divi5_fix' );
+add_action( 'plugins_loaded', 'mrdemonwolf_register_rank_math_divi5_fix', 20 );
