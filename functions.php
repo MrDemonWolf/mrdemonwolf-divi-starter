@@ -3,6 +3,8 @@
  * Divi Child Theme
  * Functions.php
  *
+ * Supports Divi 4 and Divi 5.
+ *
  * ===== NOTES ==================================================================
  *
  * Unlike style.css, the functions.php of a child theme does not override its
@@ -14,66 +16,130 @@
  *
  * =============================================================================== */
 
-/**
- * Enqueue parent theme styles
- */
-function divichild_enqueue_scripts()
-{
-    // Enqueue parent theme stylesheet
-    wp_enqueue_style('parent-style', get_template_directory_uri() . '/style.css');
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
-    // Enqueue child theme stylesheet with cache-busting
+/**
+ * Load child theme text domain for future translatable strings.
+ */
+function mrdemonwolf_setup()
+{
+    load_child_theme_textdomain( 'mrdemonwolf-divi-starter', get_stylesheet_directory() . '/languages' );
+}
+add_action( 'after_setup_theme', 'mrdemonwolf_setup' );
+
+/**
+ * Enqueue parent + child styles and the child theme script.
+ */
+function mrdemonwolf_enqueue_scripts()
+{
+    // Parent stylesheet, versioned against the parent theme's own Version header.
+    $parent_version = wp_get_theme( get_template() )->get( 'Version' );
+    wp_enqueue_style(
+        'parent-style',
+        get_template_directory_uri() . '/style.css',
+        [],
+        $parent_version ?: false
+    );
+
+    // Child stylesheet with mtime cache-busting.
     wp_enqueue_style(
         'child-style',
         get_stylesheet_directory_uri() . '/style.css',
-        ['parent-style'],
-        filemtime(get_stylesheet_directory() . '/style.css')
+        [ 'parent-style' ],
+        filemtime( get_stylesheet_directory() . '/style.css' )
     );
 
-    // Enqueue child theme script (script.js)
+    // Child theme script.
     $script_path = get_stylesheet_directory() . '/script.js';
     $script_uri  = get_stylesheet_directory_uri() . '/script.js';
-    $version     = file_exists($script_path) ? filemtime($script_path) : false;
+    $version     = file_exists( $script_path ) ? filemtime( $script_path ) : false;
 
-    wp_enqueue_script('grittolead-script', $script_uri, [], $version, true);
+    wp_enqueue_script( 'mrdemonwolf-script', $script_uri, [], $version, true );
 }
-add_action('wp_enqueue_scripts', 'divichild_enqueue_scripts');
+add_action( 'wp_enqueue_scripts', 'mrdemonwolf_enqueue_scripts' );
 
 /**
- * Replace the howdy greeting with a custom greeting based on time of day
+ * Replace the Howdy greeting with a time-of-day greeting.
  */
-function fancy_replace_howdy($wp_admin_bar)
+function mrdemonwolf_replace_howdy( $wp_admin_bar )
 {
-    $Hour = date('G');
-    $msg  = '';
-    if ($Hour >= 5 && $Hour <= 11) {
+    $hour = (int) wp_date( 'G' );
+
+    if ( $hour >= 5 && $hour <= 11 ) {
         $msg = 'Good morning,';
-    } elseif ($Hour >= 12 && $Hour <= 18) {
+    } elseif ( $hour >= 12 && $hour <= 18 ) {
         $msg = 'Good afternoon,';
-    } elseif ($Hour >= 19 || $Hour <= 4) {
+    } else {
+        // 19-23 and 0-4
         $msg = 'Good evening,';
     }
-    $my_account = $wp_admin_bar->get_node('my-account');
 
-    // Only proceed if the node exists and has a title property
-    if ($my_account && isset($my_account->title)) {
-        $newtitle = str_replace('Howdy,', $msg, $my_account->title);
-        $wp_admin_bar->add_node([
+    $my_account = $wp_admin_bar->get_node( 'my-account' );
+
+    if ( $my_account && isset( $my_account->title ) ) {
+        $newtitle = str_replace( 'Howdy,', $msg, $my_account->title );
+        $wp_admin_bar->add_node( [
             'id'    => 'my-account',
             'title' => $newtitle,
-        ]);
+        ] );
     }
 }
-
-add_filter('admin_bar_menu', 'fancy_replace_howdy', 9992);
+// Priority 100: late enough to run after the default my-account node is built (default priority 7).
+add_action( 'admin_bar_menu', 'mrdemonwolf_replace_howdy', 100 );
 
 /**
- * Disable author from embeds response data.
+ * Disable author info from oEmbed response data.
  */
-add_filter('oembed_response_data', 'disable_embeds_filter_oembed_response_data_');
-function disable_embeds_filter_oembed_response_data_($data, $url, $args)
+function mrdemonwolf_disable_embed_author( $data )
 {
-    unset($data['author_url']);
-    unset($data['author_name']);
+    unset( $data['author_url'] );
+    unset( $data['author_name'] );
     return $data;
 }
+add_filter( 'oembed_response_data', 'mrdemonwolf_disable_embed_author' );
+
+/**
+ * RankMath + Divi 5 content-analysis fix.
+ *
+ * Divi 5 stores layouts as blocks. RankMath's researcher sees raw block markup
+ * and reports 0 words. Pipe content through `the_content` so blocks render
+ * before RankMath analyzes. Only registered when RankMath is active.
+ *
+ * Registered on `plugins_loaded` priority 20 so RankMath's constants are
+ * guaranteed defined. Includes a recursion guard in case any plugin re-enters
+ * this filter from inside `the_content`.
+ *
+ * Harmless on Divi 4 — `the_content` is a no-op for content not built with
+ * the Divi 5 block editor.
+ */
+function mrdemonwolf_rank_math_divi5_content( $content, $post_id )
+{
+    static $running = false;
+
+    if ( $running ) {
+        return $content;
+    }
+
+    $post = get_post( $post_id );
+    if ( ! $post || empty( $post->post_content ) ) {
+        return $content;
+    }
+
+    $running  = true;
+    $rendered = apply_filters( 'the_content', $post->post_content );
+    $running  = false;
+
+    return $rendered !== '' ? $rendered : $content;
+}
+
+function mrdemonwolf_register_rank_math_divi5_fix()
+{
+    if ( ! defined( 'RANK_MATH_VERSION' ) ) {
+        return;
+    }
+
+    add_filter( 'rank_math/researcher/post_content', 'mrdemonwolf_rank_math_divi5_content', 10, 2 );
+}
+add_action( 'plugins_loaded', 'mrdemonwolf_register_rank_math_divi5_fix', 20 );

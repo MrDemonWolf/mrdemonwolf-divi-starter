@@ -1,5 +1,3 @@
-console.log("Loading script.js");
-
 (function () {
     console.log(
         "%cStop!",
