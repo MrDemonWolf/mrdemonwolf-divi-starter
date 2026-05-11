@@ -24,6 +24,8 @@
         <exclude name="WordPress.PHP.YodaConditions"/>
         <exclude name="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/>
         <exclude name="Universal.Operators.DisallowShortTernary"/>
+        <exclude name="PEAR.Functions.FunctionCallSignature.ContentAfterOpenBracket"/>
+        <exclude name="PEAR.Functions.FunctionCallSignature.CloseBracketLine"/>
 
         <!-- Docblock nits — keep code self-documenting, skip @param/@package noise. -->
         <exclude name="Squiz.Commenting.FunctionComment.MissingParamTag"/>
