@@ -20,7 +20,6 @@
         <!-- Formatting nits — code uses 4-space indent, short arrays, no Yoda. -->
         <exclude name="Generic.WhiteSpace.DisallowSpaceIndent"/>
         <exclude name="Generic.WhiteSpace.ScopeIndent"/>
-        <exclude name="WordPress.WhiteSpace.PrecisionAlignment"/>
         <exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
         <exclude name="WordPress.PHP.YodaConditions"/>
         <exclude name="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/>
